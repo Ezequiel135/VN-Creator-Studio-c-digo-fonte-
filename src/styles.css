@@ -1,0 +1,5 @@
+
+/* Importando Tailwind via CSS ou mantendo via CDN no index.html. 
+   Para este setup rápido, deixaremos vazio pois o Tailwind está no CDN,
+   mas definimos resets básicos */
+html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #000; }

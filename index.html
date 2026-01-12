@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>VN Creator Studio</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@400;700&family=Roboto+Mono:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #18181b; color: #f4f4f5; overflow: hidden; height: 100dvh; width: 100vw; }
+    
+    /* --- UTILS --- */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    .unsqueezed-img { max-width: none !important; height: 100%; width: auto; }
+
+    /* =========================================
+       1. SCENE TRANSITIONS (Cinematic)
+       ========================================= */
+    .scene-trans-fade { animation: cinemaFadeIn 0.8s ease-in-out forwards; }
+    .scene-trans-dissolve { animation: cinemaDissolve 1.2s ease-in-out forwards; }
+    .scene-trans-slide-left { animation: cinemaSlideLeft 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    .scene-trans-slide-right { animation: cinemaSlideRight 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    .scene-trans-zoom { animation: cinemaZoomIn 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    .scene-trans-flash { animation: cinemaFlash 0.5s ease-out forwards; }
+
+    @keyframes cinemaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cinemaDissolve { 0% { opacity: 0; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes cinemaSlideLeft { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes cinemaSlideRight { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes cinemaZoomIn { from { transform: scale(1.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes cinemaFlash { 0% { filter: brightness(3); opacity: 0; } 100% { filter: brightness(1); opacity: 1; } }
+
+    /* =========================================
+       2. CHARACTER ANIMATIONS (Smooth & Bouncy)
+       ========================================= */
+    .char-enter-fade { animation: charFade 0.5s ease-out forwards; }
+    .char-enter-slide-left { animation: charSlideLeft 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .char-enter-slide-right { animation: charSlideRight 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .char-enter-pop { animation: charPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; }
+    .char-enter-shake { animation: charShake 0.5s ease-in-out forwards; }
+    
+    /* Important: Animations handle centering translateX(-50%) internally */
+    @keyframes charFade { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes charSlideLeft { from { opacity: 0; transform: translateX(-100%) translateX(-50%); } to { opacity: 1; transform: translateX(0) translateX(-50%); } }
+    @keyframes charSlideRight { from { opacity: 0; transform: translateX(100%) translateX(-50%); } to { opacity: 1; transform: translateX(0) translateX(-50%); } }
+    @keyframes charPop { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
+    @keyframes charShake { 
+      0%, 100% { transform: translateX(-50%); } 
+      25% { transform: translateX(-55%) rotate(-2deg); } 
+      75% { transform: translateX(-45%) rotate(2deg); } 
+    }
+
+    /* =========================================
+       3. VISUAL EFFECTS & WEATHER (High Quality)
+       ========================================= */
+    
+    /* RAIN: Double Layer Parallax */
+    .fx-rain, .fx-hard-rain { position: relative; overflow: hidden; pointer-events: none; }
+    .fx-rain::before, .fx-rain::after, .fx-hard-rain::before, .fx-hard-rain::after {
+        content: ""; position: absolute; inset: -100% 0 0 0; z-index: 10;
+        background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/shiny/1.svg'); /* Dummy URL replaced below with CSS Gradient */
+        background-image: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        background-size: 1px 30px; animation: rainFall linear infinite;
+    }
+    .fx-rain::before { opacity: 0.3; animation-duration: 0.8s; } /* Far layer */
+    .fx-rain::after { opacity: 0.6; background-size: 2px 40px; animation-duration: 0.5s; animation-delay: -0.2s; } /* Near layer */
+    
+    .fx-hard-rain::before { opacity: 0.5; animation-duration: 0.5s; background-size: 2px 50px; transform: rotate(10deg); }
+    .fx-hard-rain::after { opacity: 0.8; animation-duration: 0.3s; background-size: 3px 70px; transform: rotate(10deg); }
+
+    /* SNOW: Gentle Sway */
+    .fx-snow { position: relative; overflow: hidden; pointer-events: none; }
+    .fx-snow::before {
+        content: ""; position: absolute; inset: 0; pointer-events: none;
+        background-image: radial-gradient(3px 3px at 20% 30%, #fff 50%, transparent),
+                          radial-gradient(3px 3px at 40% 70%, #fff 50%, transparent),
+                          radial-gradient(3px 3px at 60% 20%, #fff 50%, transparent),
+                          radial-gradient(4px 4px at 80% 80%, #fff 50%, transparent),
+                          radial-gradient(2px 2px at 10% 90%, #fff 50%, transparent);
+        background-size: 300px 300px;
+        animation: snowFall 10s linear infinite; opacity: 0.8;
+    }
+
+    /* FOG: Sliding Texture */
+    .fx-fog {
+        background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png') repeat-x;
+        background-size: 200% auto;
+        background-position: 0 bottom;
+        opacity: 0.4;
+        animation: fogScroll 60s linear infinite alternate;
+        mix-blend-mode: screen;
+        pointer-events: none;
+    }
+
+    /* FILTERS */
+    .fx-night { background: rgba(5, 10, 40, 0.5); mix-blend-mode: multiply; pointer-events: none; }
+    .fx-sunset { background: linear-gradient(to bottom, rgba(255, 160, 0, 0.2), rgba(100, 0, 100, 0.2)); mix-blend-mode: overlay; pointer-events: none; }
+    .fx-sepia { backdrop-filter: sepia(0.8) contrast(0.9); pointer-events: none; background: rgba(80, 60, 40, 0.1); }
+    .fx-flash { animation: flashEffect 0.3s ease-out forwards; background: white; pointer-events: none; }
+
+    /* Keyframes for Weather */
+    @keyframes rainFall { from { transform: translateY(0) translateX(0); } to { transform: translateY(50vh) translateX(-10px); } }
+    @keyframes snowFall { 0% { background-position: 0 0; } 100% { background-position: 50px 300px; } }
+    @keyframes fogScroll { 0% { background-position: 0 bottom; opacity: 0.3; } 50% { opacity: 0.5; } 100% { background-position: 200% bottom; opacity: 0.3; } }
+    @keyframes flashEffect { 0% { opacity: 0; } 10% { opacity: 1; } 100% { opacity: 0; } }
+
+    /* =========================================
+       4. PARTICLES (New)
+       ========================================= */
+    @keyframes particleFall {
+        0% { top: -10%; opacity: 0; transform: translateX(0) rotate(0deg); }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { top: 110%; opacity: 0; transform: translateX(var(--fall-x, 20px)) rotate(var(--fall-r, 360deg)); }
+    }
+    @keyframes particleSway {
+        0% { margin-left: 0; }
+        50% { margin-left: 30px; }
+        100% { margin-left: 0; }
+    }
+
+    /* Utility */
+    .animate-shake { animation: charShake 0.5s ease-in-out; }
+    .animate-fade-in { animation: cinemaFadeIn 0.5s ease-out forwards; }
+    .animate-fade-in-up { animation: cinemaFadeIn 0.5s ease-out, fadeInUp 0.5s ease-out; }
+    @keyframes fadeInUp { from { transform: translateY(20px); } to { transform: translateY(0); } }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "rxjs": "https://esm.sh/rxjs@^7.8.2?conditions=es2015",
+    "rxjs/operators": "https://esm.sh/rxjs@^7.8.2/operators?conditions=es2015",
+    "rxjs/ajax": "https://esm.sh/rxjs@^7.8.2/ajax?conditions=es2015",
+    "rxjs/webSocket": "https://esm.sh/rxjs@^7.8.2/webSocket?conditions=es2015",
+    "rxjs/testing": "https://esm.sh/rxjs@^7.8.2/testing?conditions=es2015",
+    "rxjs/fetch": "https://esm.sh/rxjs@^7.8.2/fetch?conditions=es2015",
+    "@angular/compiler": "https://esm.sh/@angular/compiler@^21.0.6?external=rxjs",
+    "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@^21.0.6?external=rxjs",
+    "@angular/core": "https://esm.sh/@angular/core@^21.0.6?external=rxjs",
+    "@angular/common": "https://esm.sh/@angular/common@^21.0.6?external=rxjs",
+    "@angular/forms": "https://esm.sh/@angular/forms@^21.0.6?external=rxjs",
+    "@angular/router": "https://esm.sh/@angular/router@^21.0.8?external=rxjs"
+  }
+}
+</script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
